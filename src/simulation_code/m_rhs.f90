@@ -3152,6 +3152,8 @@ contains
         integer :: q
         real(kind(0d0)) :: h, hx, hy, hz
         real(kind(0d0)) :: hxnew, hynew
+        real(kind(0d0)) :: hx_cyl, hy_cyl, hz_cyl
+        real(kind(0d0)) :: hxnew_cyl, hynew_cyl, hznew_cyl
         real(kind(0d0)) :: sig
         real(kind(0d0)) :: f_delta
 
@@ -3228,21 +3230,41 @@ contains
                 if (abs(hynew) < length(nm)/2. .and. &
                     abs(hz) < length(nm)/2.) then
                     f_delta = 1.d0/(dsqrt(2.d0*pi)*sig/2.d0)* &
-                              dexp(-0.5d0*(hynew/(sig/2.d0))**2.d0)
+                              dexp(-0.5d0*(hxnew/(sig/2.d0))**2.d0)
+
                 else
                     f_delta = 0d0
                 end if
             else if (support(nm) == 4) then
 
-                ! Rotate actual point by -theta
-                hxnew = cos(dir(nm))*hx + sin(dir(nm))*hy
-                hynew = -1.d0*sin(dir(nm))*hx + cos(dir(nm))*hy
-
                 ! Support for all x,y
                 !f_delta = 1.d0/(dsqrt(2.d0*pi)*sig)* &
                          !dexp(-0.5d0*(hz/sig)**2.d0)
                 f_delta = 1.d0/(dsqrt(2.d0*pi)*sig)* &
-                          dexp(-0.5d0*(hynew/sig)**2.d0)
+                          dexp(-0.5d0*(hx/sig)**2.d0)
+
+            else if (support(nm) == 5) then
+
+                ! Transfer to cylindrical coordinate
+                sig = maxval((/dx(j), dy(k)*cos(dz(l)), dz(l)*sin(dz(l))/))
+                sig = sig*2.5d0
+                hx_cyl = x_cc(j) - mono_loc(1)
+                hy_cyl = y_cc(k)*cos(z_cc(l)) - mono_loc(2)
+                hz_cyl = y_cc(k)*sin(z_cc(l)) - mono_loc(3)
+
+                ! Rotate actual point by -theta
+                hxnew_cyl = cos(dir(nm))*hx_cyl + sin(dir(nm))*hy_cyl
+                hynew_cyl = -1.d0*sin(dir(nm))*hx_cyl + cos(dir(nm))*hy_cyl
+
+                ! Support for cylindrical coordinate system
+                if (abs(hynew_cyl) < length(nm)/2. .and. &
+                    abs(hz_cyl) < length(nm)/2.) then
+                    f_delta = 1.d0/(dsqrt(2.d0*pi)*sig)* &
+                              dexp(-0.5d0*(hxnew_cyl/(sig))**2.d0)
+                else
+                    f_delta = 0d0
+                end if
+
             end if
         end if
 
