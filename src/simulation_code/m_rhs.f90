@@ -985,7 +985,7 @@ contains
                                   qL_rsx_vf_flat, qL_rsy_vf_flat, qL_rsz_vf_flat, &
                                   dqL_prim_dx_n(id)%vf, &
                                   dqL_prim_dy_n(id)%vf, &
-                                  dqL_prim_dz_n(id)%vf, &
+                                  dqL_prim_dz_n(id)%vf,  &
                                   qL_prim(id)%vf, &
                                   q_prim_qp%vf, &
                                   flux_n(id)%vf, &
@@ -1421,8 +1421,15 @@ contains
                                                     mono_mom_src(1, j, k, l) = mono_mom_src(1, j, k, l) + s2*cos(dir(q))
                                                     mono_mom_src(2, j, k, l) = mono_mom_src(2, j, k, l) + s2*sin(dir(q))
                                                 end if
+                                            else if (cyl_coord) then
+                                                ! Cylindrical Coordinate
+                                                if (dir(q) /= dflt_real) then
+                                                    mono_mom_src(1, j, k, l) = mono_mom_src(1, j, k, l) + s2
+                                                    !mono_mom_src(2, j, k, l) = mono_mom_src(2, j, k, l) + s2*sin(dir(q))
+                                                end if
+
                                             else
-                                                ! 3D
+                                                ! 3D xyz
                                                 if (dir(q) /= dflt_real) then
                                                     mono_mom_src(1, j, k, l) = mono_mom_src(1, j, k, l) + s2*cos(dir(q))
                                                     mono_mom_src(2, j, k, l) = mono_mom_src(2, j, k, l) + s2*sin(dir(q))
@@ -1450,10 +1457,18 @@ contains
                                     rhs_vf(q)%sf(j, k, l) = rhs_vf(q)%sf(j, k, l) + mono_mass_src(j, k, l)
                                 end do
 !$acc loop seq
-                                do q = momxb, momxe
-                                    rhs_vf(q)%sf(j, k, l) = rhs_vf(q)%sf(j, k, l) + mono_mom_src(q - contxe, j, k, l)
-                                end do
-                                rhs_vf(E_idx)%sf(j, k, l) = rhs_vf(E_idx)%sf(j, k, l) + mono_e_src(j, k, l)
+                                if (cyl_coord) then
+                                     rhs_vf(momxe)%sf(j, k, l) = rhs_vf(momxe)%sf(j, k, l) + mono_mom_src(momxb - contxe, j, k, l)
+                                     rhs_vf(momxe - 1)%sf(j, k, l) = rhs_vf(momxe - 1)%sf(j, k, l) + mono_mom_src(momxb - contxe + 1, j, k, l)
+                                     rhs_vf(momxe - 2)%sf(j, k, l) = rhs_vf(momxe - 2)%sf(j, k, l) + mono_mom_src(momxb - contxe + 2, j, k, l)
+                                else
+                                    do q = momxb, momxe
+                                       rhs_vf(q)%sf(j, k, l) = rhs_vf(q)%sf(j, k, l) + mono_mom_src(q - contxe, j, k, l)
+                                    end do
+                                end if
+
+                                rhs_vf(E_idx)%sf(j, k, l) = rhs_vf(E_idx)%sf(j, k, l) + mono_E_src(j, k, l)
+                                !rhs_vf(E_idx)%sf(j, k, l) = rhs_vf(E_idx)%sf(j, k, l) + mono_e_src(j, k, l)
                             end do
                         end do
                     end do
@@ -1876,6 +1891,13 @@ contains
                                                     mono_mom_src(1, j, k, l) = mono_mom_src(1, j, k, l) + s2*cos(dir(q))
                                                     mono_mom_src(2, j, k, l) = mono_mom_src(2, j, k, l) + s2*sin(dir(q))
                                                 end if
+                                            else if (cyl_coord) then
+                                                ! Cylindrical Coordinate
+                                                if (dir(q) /= dflt_real) then
+                                                    mono_mom_src(1, j, k, l) = mono_mom_src(1, j, k, l) + s2
+                                                    !mono_mom_src(2, j, k, l) = mono_mom_src(2, j, k, l) + s2*sin(dir(q))
+                                                end if
+
                                             else
                                                 ! 3D
                                                 if (dir(q) /= dflt_real) then
@@ -1905,10 +1927,18 @@ contains
                                     rhs_vf(q)%sf(j, k, l) = rhs_vf(q)%sf(j, k, l) + mono_mass_src(j, k, l)
                                 end do
 !$acc loop seq
-                                do q = momxb, momxe
-                                    rhs_vf(q)%sf(j, k, l) = rhs_vf(q)%sf(j, k, l) + mono_mom_src(q - contxe, j, k, l)
-                                end do
-                                rhs_vf(E_idx)%sf(j, k, l) = rhs_vf(E_idx)%sf(j, k, l) + mono_e_src(j, k, l)
+                                if (cyl_coord) then
+                                     rhs_vf(momxe)%sf(j, k, l) = rhs_vf(momxe)%sf(j, k, l) + mono_mom_src(momxb - contxe, j, k, l)
+                                     rhs_vf(momxe - 1)%sf(j, k, l) = rhs_vf(momxe - 1)%sf(j, k, l) + mono_mom_src(momxb - contxe + 1, j, k, l)
+                                     rhs_vf(momxe - 2)%sf(j, k, l) = rhs_vf(momxe - 2)%sf(j, k, l) + mono_mom_src(momxb - contxe + 2, j, k, l)
+                                else
+                                    do q = momxb, momxe
+                                       rhs_vf(q)%sf(j, k, l) = rhs_vf(q)%sf(j, k, l) + mono_mom_src(q - contxe, j, k, l)
+                                    end do
+                                end if
+
+                                rhs_vf(E_idx)%sf(j, k, l) = rhs_vf(E_idx)%sf(j, k, l) + mono_E_src(j, k, l)
+                                !rhs_vf(E_idx)%sf(j, k, l) = rhs_vf(E_idx)%sf(j, k, l) + mono_e_src(j, k, l)
                             end do
                         end do
                     end do
@@ -2527,6 +2557,13 @@ contains
                                                     mono_mom_src(1, j, k, l) = mono_mom_src(1, j, k, l) + s2*cos(dir(q))
                                                     mono_mom_src(2, j, k, l) = mono_mom_src(2, j, k, l) + s2*sin(dir(q))
                                                 end if
+                                            else if (cyl_coord) then
+                                                ! Cylindrical Coordinate
+                                                if (dir(q) /= dflt_real) then
+                                                    mono_mom_src(1, j, k, l) = mono_mom_src(1, j, k, l) + s2
+                                                    !mono_mom_src(2, j, k, l) = mono_mom_src(2, j, k, l) + s2*sin(dir(q))
+                                                end if
+
                                             else
                                                 ! 3D
                                                 if (dir(q) /= dflt_real) then
@@ -2556,10 +2593,18 @@ contains
                                     rhs_vf(q)%sf(j, k, l) = rhs_vf(q)%sf(j, k, l) + mono_mass_src(j, k, l)
                                 end do
 !$acc loop seq
-                                do q = momxb, momxe
-                                    rhs_vf(q)%sf(j, k, l) = rhs_vf(q)%sf(j, k, l) + mono_mom_src(q - contxe, j, k, l)
-                                end do
-                                rhs_vf(E_idx)%sf(j, k, l) = rhs_vf(E_idx)%sf(j, k, l) + mono_e_src(j, k, l)
+                                if (cyl_coord) then
+                                     rhs_vf(momxe)%sf(j, k, l) = rhs_vf(momxe)%sf(j, k, l) + mono_mom_src(momxb - contxe, j, k, l)
+                                     rhs_vf(momxe - 1)%sf(j, k, l) = rhs_vf(momxe - 1)%sf(j, k, l) + mono_mom_src(momxb - contxe + 1, j, k, l)
+                                     rhs_vf(momxe - 2)%sf(j, k, l) = rhs_vf(momxe - 2)%sf(j, k, l) + mono_mom_src(momxb - contxe + 2, j, k, l)
+                                else
+                                    do q = momxb, momxe
+                                       rhs_vf(q)%sf(j, k, l) = rhs_vf(q)%sf(j, k, l) + mono_mom_src(q - contxe, j, k, l)
+                                    end do
+                                end if
+
+                                rhs_vf(E_idx)%sf(j, k, l) = rhs_vf(E_idx)%sf(j, k, l) + mono_E_src(j, k, l)
+                                !rhs_vf(E_idx)%sf(j, k, l) = rhs_vf(E_idx)%sf(j, k, l) + mono_e_src(j, k, l)
                             end do
                         end do
                     end do
@@ -3231,10 +3276,10 @@ contains
                     abs(hz) < length(nm)/2.) then
                     f_delta = 1.d0/(dsqrt(2.d0*pi)*sig/2.d0)* &
                               dexp(-0.5d0*(hxnew/(sig/2.d0))**2.d0)
-
                 else
                     f_delta = 0d0
                 end if
+
             else if (support(nm) == 4) then
 
                 ! Support for all x,y
@@ -3245,27 +3290,31 @@ contains
 
             else if (support(nm) == 5) then
 
-                ! Transfer to cylindrical coordinate
-                sig = maxval((/dx(j), dy(k)*cos(dz(l)), dz(l)*sin(dz(l))/))
+                ! Cylindrical coordinate to normal xyz
+                !sig = maxval((/dx(j), dy(k)*sin(dz(l)), dz(l)*cos(dz(l))/))
+                sig = dx(j)
                 sig = sig*2.5d0
                 hx_cyl = x_cc(j) - mono_loc(1)
-                hy_cyl = y_cc(k)*cos(z_cc(l)) - mono_loc(2)
-                hz_cyl = y_cc(k)*sin(z_cc(l)) - mono_loc(3)
+                !Print "(f6.4)", x_cc(j)
+                hy_cyl = y_cc(k)*sin(z_cc(l)) - mono_loc(2)
+                hz_cyl = y_cc(k)*cos(z_cc(l)) - mono_loc(3)
 
                 ! Rotate actual point by -theta
                 hxnew_cyl = cos(dir(nm))*hx_cyl + sin(dir(nm))*hy_cyl
+                !Print "(f6.4)", hxnew_cyl
                 hynew_cyl = -1.d0*sin(dir(nm))*hx_cyl + cos(dir(nm))*hy_cyl
 
                 ! Support for cylindrical coordinate system
                 if (abs(hynew_cyl) < length(nm)/2. .and. &
                     abs(hz_cyl) < length(nm)/2.) then
-                    f_delta = 1.d0/(dsqrt(2.d0*pi)*sig)* &
-                              dexp(-0.5d0*(hxnew_cyl/(sig))**2.d0)
+                    f_delta = 1.d0/(dsqrt(2.d0*pi)*sig/2.d0)* &
+                              dexp(-0.5d0*(hxnew_cyl/(sig/2.d0))**2.d0)
                 else
                     f_delta = 0d0
                 end if
 
             end if
+
         end if
 
     end function f_delta
