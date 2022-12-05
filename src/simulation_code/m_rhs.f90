@@ -1424,8 +1424,9 @@ contains
                                             else if (cyl_coord) then
                                                 ! Cylindrical Coordinate
                                                 if (dir(q) /= dflt_real) then
-                                                    mono_mom_src(1, j, k, l) = mono_mom_src(1, j, k, l) + s2
-                                                    !mono_mom_src(2, j, k, l) = mono_mom_src(2, j, k, l) + s2*sin(dir(q))
+                                                    !mono_mom_src(1, j, k, l) = mono_mom_src(1, j, k, l) + s2
+                                                    !mono_mom_src(2, j, k, l) = mono_mom_src(2, j, k, l) + s2
+                                                    mono_mom_src(3, j, k, l) = mono_mom_src(3, j, k, l) + s2
                                                 end if
 
                                             else
@@ -1894,8 +1895,9 @@ contains
                                             else if (cyl_coord) then
                                                 ! Cylindrical Coordinate
                                                 if (dir(q) /= dflt_real) then
-                                                    mono_mom_src(1, j, k, l) = mono_mom_src(1, j, k, l) + s2
-                                                    !mono_mom_src(2, j, k, l) = mono_mom_src(2, j, k, l) + s2*sin(dir(q))
+                                                    !mono_mom_src(1, j, k, l) = mono_mom_src(1, j, k, l) + s2
+                                                    !mono_mom_src(2, j, k, l) = mono_mom_src(2, j, k, l) + s2
+                                                    mono_mom_src(3, j, k, l) = mono_mom_src(3, j, k, l) + s2
                                                 end if
 
                                             else
@@ -2560,8 +2562,9 @@ contains
                                             else if (cyl_coord) then
                                                 ! Cylindrical Coordinate
                                                 if (dir(q) /= dflt_real) then
-                                                    mono_mom_src(1, j, k, l) = mono_mom_src(1, j, k, l) + s2
-                                                    !mono_mom_src(2, j, k, l) = mono_mom_src(2, j, k, l) + s2*sin(dir(q))
+                                                    !mono_mom_src(1, j, k, l) = mono_mom_src(1, j, k, l) + s2
+                                                    !mono_mom_src(2, j, k, l) = mono_mom_src(2, j, k, l) + s2
+                                                    mono_mom_src(3, j, k, l) = mono_mom_src(3, j, k, l) + s2
                                                 end if
 
                                             else
